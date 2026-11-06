@@ -60,11 +60,28 @@ class MemoryTrainerApp:
         self.start_btn.pack(pady=5)
 
     def start_game(self):
-        """Сброс параметров и запуск теста с 2 цифр"""
         self.digits_count = 2
         self.start_btn.config(text="Начать заново")
         self.next_round()
 
+    def next_round(self):
+        if self.timer_id is not None:
+            self.root.after_cancel(self.timer_id)
+        self.update_stats()
+
+        low = 10 ** (self.digits_count - 1)
+        high = (10 ** self.digits_count) - 1
+        self.secret_number = random.randint(low, high)
+        self.info_label.config(text="Запомните число:")
+        self.number_label.config(text=str(self.secret_number))
+
+        self.timer_id = self.root.after(2500, self.hide_number)
+    
+    def hide_number(self):
+        self.number_label.config(text="???")
+        self.info_label.config(text="Введите число:")
+        self.answer_entry.config(state="normal")
+        self.check_btn.config(state="normal")
 
 if __name__ == "__main__":
     root = tk.Tk()
