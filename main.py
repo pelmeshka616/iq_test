@@ -1,8 +1,8 @@
+
 import tkinter as tk
 from tkinter import messagebox, simpledialog
 import random
-
-
+import os
 
 class MemoryTrainerApp:
     def __init__(self, root):
@@ -14,8 +14,17 @@ class MemoryTrainerApp:
         self.secret_number = 0      
         self.best_score = 0          
         self.timer_id = None        
+
+        self.image_paths = {
+            "level_1": "tupik.png",  
+            "level_2": "tiktok.png",     
+            "level_3": "plankton.png",   
+            "level_4": "ment.png",       
+            "level_5": "genius.png"      
+        }
+        
         self._create_menu()
-        self._create_widgets() 
+        self._create_widgets()
 
     def _create_menu(self):
         menubar = tk.Menu(self.root)
@@ -32,10 +41,6 @@ class MemoryTrainerApp:
         size_menu.add_command(label="Большое (600x450)", command=lambda: self.set_window_size(600, 450))
 
         self.root.config(menu=menubar)
-
-    def start_game(self):
-        self.digits_count = 1
-        self.start_btn.config(text="Начать заново")
 
     def _create_widgets(self):
         self.stats_label = tk.Label(self.root, text="Текущая длина: 1 | Рекорд: 0 ", font=("Arial", 11))
@@ -105,6 +110,7 @@ class MemoryTrainerApp:
             self.answer_entry.delete(0, tk.END)
             self.answer_entry.focus_set()
             return
+            
         if user_number == self.secret_number:
             if self.digits_count > self.best_score:
                 self.best_score = self.digits_count
@@ -112,14 +118,18 @@ class MemoryTrainerApp:
             self.next_round()
         else:
             memorized = self.digits_count - 1
-            evaluation = self.evaluate_memory(memorized)
-            messagebox.showinfo(
-                "Результат теста",
+            
+            evaluation_text, image_key = self.evaluate_memory(memorized)
+            
+            full_result_text = (
                 f"Неверно!\nЗагаданное число: {self.secret_number}\n"
                 f"Ваш ответ: {user_number}\n\n"
-                f"Вы успешно запомнили цифр подряд: {memorized}\n"
-                f"Оценка памяти: {evaluation}"
+                f"Вы успешно запомнили цифр подряд: {memorized}\n\n"
+                f"{evaluation_text}"
             )
+            
+            self.show_custom_result("Результат теста", full_result_text, image_key)
+            
             self.info_label.config(text="Нажмите «Начать заново» для новой попытки")
             self.number_label.config(text="---")
             self.answer_entry.config(state="disabled")
@@ -128,18 +138,44 @@ class MemoryTrainerApp:
 
     def evaluate_memory(self, score):
         if score <= 4:
-            return "Ваш IQ меньше 70! У вас существенный дефицит кратковременной памяти! ВЫ - Клинический случай или так называемый эволюционный тупик! "
+            return "Ваш IQ меньше 70! У вас существенный дефицит кратковременной памяти! ВЫ - Клинический случай или так называемый эволюционный тупик!", "level_1"
         elif 5 <= score <= 6:
-            return " Ваш IQ - 80 - 95! ВЫ - Полуживая жертва тиктока!"
+            return "Ваш IQ - 80 - 95! ВЫ - Полуживая жертва тиктока!", "level_2"
         elif score <= 8:
-            return "Ваш IQ - 96-115! ВЫ - Обычная серая масса!"
+            return "Ваш IQ - 96-115! ВЫ - Обычная серая масса!", "level_3"
         elif score <= 10:
-            return "Ваш IQ - 116-135! ВЫ как мент с блокнотом - помните всё(или почти)!"
+            return "Ваш IQ - 116-135! ВЫ как мент с блокнотом - помните всё(или почти)!", "level_4"
         else:
-            return "Ваш IQ - 135+! ВЫ - Гений! Хватит перегружать тест! У вас оперативки больше, чем у сервера!"
+            return "Ваш IQ - 135+! ВЫ - Гений! Хватит перегружать тест! У вас оперативки больше, чем у сервера!", "level_5"
+
+    def show_custom_result(self, title, text, image_key):
+        top = tk.Toplevel(self.root)
+        top.title(title)
+        top.geometry("500x550")
+        top.grab_set()  
+        top.resizable(False, False)
+        
+        filename = self.image_paths.get(image_key, "")
+
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        full_image_path = os.path.join(current_dir, "images", filename)
+        
+        try:
+            img = tk.PhotoImage(file=full_image_path)
+            top.image = img 
+            img_label = tk.Label(top, image=img)
+            img_label.pack(pady=15)
+        except Exception as e:
+            error_label = tk.Label(top, text=f"[Место для картинки: {filename}]\n(Файл не найден по пути:\n{full_image_path})", bg="#f0f0f0", width=45, height=10, fg="red", wraplength=400)
+            error_label.pack(pady=15)
+
+        txt_label = tk.Label(top, text=text, font=("Arial", 12, "bold"), justify="center", wraplength=450)
+        txt_label.pack(pady=10)
+
+        close_btn = tk.Button(top, text="Понял, принял", font=("Arial", 12), width=15, command=top.destroy)
+        close_btn.pack(pady=15)
 
     def update_stats(self):
-
         self.stats_label.config(text=f"Текущая длина: {self.digits_count} | Рекорд: {self.best_score} ")
 
     def set_window_size(self, width, height):
