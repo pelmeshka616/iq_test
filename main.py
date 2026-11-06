@@ -36,6 +36,35 @@ class MemoryTrainerApp:
         self.digits_count = 1
         self.start_btn.config(text="Начать заново")
 
+    def _create_widgets(self):
+        self.stats_label = tk.Label(self.root,text="Текущая длина: 2 | Рекорд: 0 цифр",font=("Arial", 11))
+        self.stats_label.pack(pady=10)
+
+        self.info_label = tk.Label(self.root,text="Нажмите «Старт», чтобы проверить память",font=("Arial", 12),wraplength=400)
+        self.info_label.pack(pady=10)
+
+        self.number_label = tk.Label(self.root,text="---",font=("Arial", 26, "bold"),fg="#2c3e50")
+        self.number_label.pack(pady=15)
+
+        self.answer_entry.pack(pady=10, ipadx=10, ipady=3)
+        self.answer_entry.bind("<Return>", lambda event: self.check_answer())
+
+
+        self.start_btn = tk.Button(
+            self.root,
+            text="Старт",
+            font=("Arial", 12, "bold"),
+            width=15,
+            command=self.start_game
+        )
+        self.start_btn.pack(pady=5)
+
+    def start_game(self):
+        """Сброс параметров и запуск теста с 2 цифр"""
+        self.digits_count = 2
+        self.start_btn.config(text="Начать заново")
+        self.next_round()
+
 
 if __name__ == "__main__":
     root = tk.Tk()
