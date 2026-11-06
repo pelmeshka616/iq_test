@@ -29,7 +29,6 @@ class MemoryTrainerApp:
         size_menu.add_command(label="Среднее (500x350)", command=lambda: self.set_window_size(500, 350))
         size_menu.add_command(label="Большое (600x450)", command=lambda: self.set_window_size(600, 450))
 
-
         self.root.config(menu=menubar)
 
     def start_game(self):
@@ -37,50 +36,55 @@ class MemoryTrainerApp:
         self.start_btn.config(text="Начать заново")
 
     def _create_widgets(self):
-        self.stats_label = tk.Label(self.root,text="Текущая длина: 2 | Рекорд: 0 цифр",font=("Arial", 11))
+        self.stats_label = tk.Label(self.root, text="Текущая длина: 3 | Рекорд: 0 цифр", font=("Arial", 11))
         self.stats_label.pack(pady=10)
 
-        self.info_label = tk.Label(self.root,text="Нажмите «Старт», чтобы проверить память",font=("Arial", 12),wraplength=400)
+        self.info_label = tk.Label(self.root, text="Нажмите «Старт», чтобы проверить память", font=("Arial", 12), wraplength=380)
         self.info_label.pack(pady=10)
 
-        self.number_label = tk.Label(self.root,text="---",font=("Arial", 26, "bold"),fg="#2c3e50")
+        self.number_label = tk.Label(self.root, text="---" ,font=("Arial", 28, "bold"), fg="#2c3e50")
         self.number_label.pack(pady=15)
-
+        self.answer_entry = tk.Entry(self.root, font=("Arial", 16), justify="center", state="disabled")
         self.answer_entry.pack(pady=10, ipadx=10, ipady=3)
+
         self.answer_entry.bind("<Return>", lambda event: self.check_answer())
 
-
-        self.start_btn = tk.Button(
-            self.root,
-            text="Старт",
-            font=("Arial", 12, "bold"),
-            width=15,
-            command=self.start_game
-        )
+        self.check_btn = tk.Button(self.root, text="Проверить", font=("Arial", 12), state="disabled", width=15, command=self.check_answer)
+        self.check_btn.pack(pady=5)
+        self.start_btn = tk.Button(self.root, text="Старт", font=("Arial", 12, "bold"), width=15, command=self.start_game)
         self.start_btn.pack(pady=5)
 
     def start_game(self):
-        self.digits_count = 2
+        self.digits_count = 3
         self.start_btn.config(text="Начать заново")
         self.next_round()
 
     def next_round(self):
+        """Генерация нового числа и показ его на 2.5 секунды"""
         if self.timer_id is not None:
             self.root.after_cancel(self.timer_id)
+
         self.update_stats()
 
         low = 10 ** (self.digits_count - 1)
         high = (10 ** self.digits_count) - 1
         self.secret_number = random.randint(low, high)
+
+        self.answer_entry.config(state="normal")
+        self.answer_entry.delete(0, tk.END)
+        self.answer_entry.config(state="disabled")
+        self.check_btn.config(state="disabled")
+
         self.info_label.config(text="Запомните число:")
         self.number_label.config(text=str(self.secret_number))
-
         self.timer_id = self.root.after(2500, self.hide_number)
-    
+
     def hide_number(self):
+        """Скрытие числа и разблокировка поля ввода"""
         self.number_label.config(text="???")
-        self.info_label.config(text="Введите число:")
+        self.info_label.config(text="Введите число, которое вы видели:")
         self.answer_entry.config(state="normal")
+        self.answer_entry.focus_set()  
         self.check_btn.config(state="normal")
 
 if __name__ == "__main__":
